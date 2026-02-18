@@ -4,7 +4,7 @@
       <!-- 顶部导航 -->
       <el-header class="app-header">
         <div class="header-content">
-          <h1 class="app-title" @click="$router.push('/')">法规标准管理系统</h1>
+          <h1 class="app-title" @click="$router.push('/')">国家军队采购法规管理系统</h1>
           <div class="header-actions">
             <el-input
               v-model="searchKeyword"
@@ -145,14 +145,17 @@ body {
 }
 
 :root {
-  --primary-color: #3b82f6;
-  --text-primary: #1f2937;
-  --text-secondary: #6b7280;
+  --primary-color: #1e40af;
+  --primary-light: #3b82f6;
+  --primary-dark: #1e3a8a;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
   --bg-primary: #ffffff;
-  --bg-secondary: #f9fafb;
-  --border-color: #e5e7eb;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --bg-secondary: #f8fafc;
+  --border-color: #e2e8f0;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .app-container {
@@ -160,11 +163,11 @@ body {
 }
 
 .app-header {
-  background: var(--bg-primary);
-  border-bottom: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  border-bottom: none;
+  box-shadow: var(--shadow-md);
   height: auto !important;
-  padding: 16px 24px;
+  padding: 16px 32px;
 }
 
 .header-content {
@@ -176,36 +179,74 @@ body {
 }
 
 .app-title {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 600;
-  color: var(--primary-color);
+  color: #ffffff;
   cursor: pointer;
+  letter-spacing: 0.5px;
 }
 
 .search-input {
   width: 400px;
 }
 
+.search-input :deep(.el-input__wrapper) {
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.search-input :deep(.el-input-group__append) {
+  background: var(--primary-light);
+  border: none;
+  box-shadow: none;
+}
+
+.search-input :deep(.el-input-group__append .el-button) {
+  color: #ffffff;
+}
+
 .app-aside {
   background: var(--bg-primary);
   border-right: 1px solid var(--border-color);
-  padding: 16px 0;
+  padding: 20px 0;
 }
 
 .category-menu {
   border-right: none;
 }
 
+.category-menu :deep(.el-menu-item) {
+  height: 48px;
+  line-height: 48px;
+  margin: 4px 12px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.category-menu :deep(.el-menu-item:hover) {
+  background: var(--bg-secondary);
+}
+
+.category-menu :deep(.el-menu-item.is-active) {
+  background: var(--primary-color);
+  color: #ffffff;
+}
+
 .quick-actions {
-  padding: 16px;
+  padding: 20px 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  border-top: 1px solid var(--border-color);
+  margin-top: 16px;
 }
 
 .quick-actions .el-button {
   width: 100%;
   justify-content: flex-start;
+  border-radius: 8px;
+  height: 40px;
 }
 
 .app-main {
@@ -217,32 +258,34 @@ body {
 /* 法规卡片样式 */
 .law-card {
   background: white;
-  border-radius: 8px;
-  padding: 20px 24px;
-  margin-bottom: 12px;
+  border-radius: 12px;
+  padding: 24px 28px;
+  margin-bottom: 16px;
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-color);
-  transition: box-shadow 0.2s, transform 0.2s;
+  transition: all 0.25s ease;
   cursor: pointer;
 }
 
 .law-card:hover {
   box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  border-color: var(--primary-light);
 }
 
 .law-card .title {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 500;
   color: var(--text-primary);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  line-height: 1.5;
 }
 
 .law-card .meta {
   font-size: 13px;
   color: var(--text-secondary);
   display: flex;
-  gap: 16px;
+  gap: 20px;
 }
 
 /* 正文排版 */

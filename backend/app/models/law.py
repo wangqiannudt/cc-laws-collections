@@ -21,6 +21,7 @@ class Law(Base):
     file_url = Column(String(500), nullable=True, comment="附件下载链接")
     file_path = Column(String(500), nullable=True, comment="本地附件存储路径")
     file_content = Column(Text, nullable=True, comment="附件解析后的文本内容")
+    is_internal = Column(Integer, default=0, comment="是否为内部法规")
     created_at = Column(DateTime, default=datetime.utcnow, comment="入库时间")
     updated_at = Column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment="更新时间"

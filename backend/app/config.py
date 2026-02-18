@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     """应用配置类"""
 
     # 应用
-    app_name: str = "法规标准管理系统"
+    app_name: str = "国家军队采购法规管理系统"
     app_version: str = "1.0.0"
     debug: bool = True
 
@@ -36,6 +36,7 @@ class Settings(BaseSettings):
         "军队颁布法规": "fgzc/jdbbfg",
         "联合颁布法规": "fgzc/gjhjdlhbbfg",
         "其他法规": "fgzc/qtfg",
+        "内部法规": None,  # 内部法规不爬取
     }
 
     # 栏目 ID 映射（用于 API 调用）

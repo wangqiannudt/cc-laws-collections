@@ -20,7 +20,7 @@ PID_DIR="$PROJECT_ROOT/.pids"
 mkdir -p "$LOG_DIR" "$PID_DIR" "$PROJECT_ROOT/data/attachments"
 
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}   法规标准管理系统 - 启动脚本${NC}"
+echo -e "${GREEN}   国家军队采购法规管理系统 - 启动脚本${NC}"
 echo -e "${GREEN}========================================${NC}"
 
 # 检查是否已经在运行

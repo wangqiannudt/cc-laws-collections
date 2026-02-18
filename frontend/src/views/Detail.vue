@@ -27,24 +27,24 @@
       </div>
 
       <!-- 正文内容 -->
-      <div class="law-content" v-html="law.content"></div>
+      <div class="law-content" v-html="displayContent"></div>
 
-      <!-- 附件区域 -->
-      <div v-if="law.file_url" class="attachment-section">
+      <!-- 附件区域（正文较短且有附件内容时不显示预览） -->
+      <div v-if="law.file_url || law.file_path" class="attachment-section">
         <h3>
           <el-icon><Document /></el-icon>
           附件
         </h3>
         <div class="attachment-info">
-          <span>{{ getFileName(law.file_url) }}</span>
+          <span>{{ getFileName(law.file_path || law.file_url) }}</span>
           <el-button type="primary" size="small" @click="downloadFile">
             <el-icon><Download /></el-icon>
             下载
           </el-button>
         </div>
 
-        <!-- 附件内容 -->
-        <div v-if="law.file_content" class="file-content">
+        <!-- 附件内容预览（仅当正文较长时显示） -->
+        <div v-if="!hasShortContent && law.file_content" class="file-content">
           <h4>附件内容预览</h4>
           <pre>{{ law.file_content }}</pre>
         </div>
@@ -64,13 +64,35 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { getLawDetail } from '../api/laws'
 
 const route = useRoute()
 const law = ref(null)
 const loading = ref(false)
+
+// 判断正文是否较短
+const hasShortContent = computed(() => {
+  if (!law.value?.content) return true
+  // 去除 HTML 标签后的纯文本长度
+  const text = law.value.content.replace(/<[^>]+>/g, '').trim()
+  return text.length < 200
+})
+
+// 实际显示的内容（正文较短时用附件内容替代）
+const displayContent = computed(() => {
+  if (!law.value) return ''
+  if (hasShortContent.value && law.value.file_content) {
+    // 将附件纯文本转换为 HTML 段落
+    return law.value.file_content
+      .split('\n')
+      .filter(line => line.trim())
+      .map(line => `<p>${line}</p>`)
+      .join('')
+  }
+  return law.value.content || ''
+})
 
 // 格式化日期
 const formatDate = (dateStr) => {
@@ -88,7 +110,11 @@ const getFileName = (url) => {
 
 // 下载文件
 const downloadFile = () => {
-  if (law.value?.file_url) {
+  if (law.value?.file_path) {
+    // 使用本地下载 API
+    window.open(`/api/laws/${law.value.id}/download`, '_blank')
+  } else if (law.value?.file_url) {
+    // 降级到原始链接
     window.open(law.value.file_url, '_blank')
   }
 }
@@ -118,58 +144,91 @@ onMounted(() => {
 
 <style scoped>
 .detail-page {
-  max-width: 900px;
+  max-width: 960px;
   margin: 0 auto;
 }
 
 .detail-container {
   background: white;
-  border-radius: 8px;
-  padding: 32px 40px;
-  box-shadow: var(--shadow-sm);
+  border-radius: 12px;
+  padding: 40px 48px;
+  box-shadow: var(--shadow-md);
 }
 
 .back-btn {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  border-radius: 8px;
 }
 
 .law-title {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 600;
-  color: var(--text-primary);
-  line-height: 1.4;
-  margin-bottom: 16px;
+  color: var(--primary-color);
+  line-height: 1.5;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--border-color);
 }
 
 .law-meta {
   display: flex;
+  flex-wrap: wrap;
   gap: 24px;
   font-size: 14px;
   color: var(--text-secondary);
   padding-bottom: 20px;
-  border-bottom: 1px solid var(--border-color);
   margin-bottom: 24px;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .law-meta span {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
 .law-meta a {
   color: var(--primary-color);
   text-decoration: none;
+  font-weight: 500;
 }
 
 .law-meta a:hover {
   text-decoration: underline;
 }
 
+.law-content {
+  font-size: 16px;
+  line-height: 2;
+  color: var(--text-primary);
+}
+
+.law-content :deep(p) {
+  margin-bottom: 1.2em;
+  text-indent: 2em;
+  text-align: justify;
+}
+
+.law-content :deep(h1),
+.law-content :deep(h2),
+.law-content :deep(h3) {
+  margin: 1.8em 0 1em;
+  text-indent: 0;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.law-content :deep(h2) {
+  font-size: 18px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
 .attachment-section {
-  margin-top: 32px;
-  padding-top: 24px;
-  border-top: 1px solid var(--border-color);
+  margin-top: 40px;
+  padding: 24px;
+  background: var(--bg-secondary);
+  border-radius: 10px;
 }
 
 .attachment-section h3 {
@@ -178,43 +237,59 @@ onMounted(() => {
   gap: 8px;
   font-size: 16px;
   margin-bottom: 16px;
+  color: var(--primary-color);
 }
 
 .attachment-info {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  background: var(--bg-secondary);
-  border-radius: 6px;
+  padding: 14px 18px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.attachment-info span {
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 500;
 }
 
 .file-content {
-  margin-top: 16px;
+  margin-top: 20px;
 }
 
 .file-content h4 {
   font-size: 14px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .file-content pre {
-  background: var(--bg-secondary);
-  padding: 16px;
-  border-radius: 6px;
-  font-size: 13px;
-  line-height: 1.6;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.8;
   white-space: pre-wrap;
   word-wrap: break-word;
-  max-height: 400px;
+  max-height: 500px;
   overflow-y: auto;
+  border: 1px solid var(--border-color);
 }
 
 .actions {
-  margin-top: 24px;
-  padding-top: 16px;
+  margin-top: 32px;
+  padding-top: 24px;
   border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 12px;
+}
+
+.actions .el-button {
+  border-radius: 8px;
 }
 
 @media print {
@@ -224,6 +299,16 @@ onMounted(() => {
 
   .detail-container {
     box-shadow: none;
+    padding: 0;
+  }
+
+  .law-meta {
+    background: none;
+    padding: 0 0 16px 0;
+  }
+
+  .attachment-section {
+    background: none;
     padding: 0;
   }
 }

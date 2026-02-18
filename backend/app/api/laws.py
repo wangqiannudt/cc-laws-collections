@@ -1,12 +1,17 @@
 """法规相关 API 路由"""
 import math
+import os
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
+from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import FileResponse
 from sqlalchemy import desc, or_
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.database import get_db
 from app.models.law import Law, CrawlLog, create_crawl_log
 from app.schemas.law import (
@@ -157,6 +162,36 @@ def get_law_detail(law_id: int, db: Session = Depends(get_db)):
     if not law:
         raise HTTPException(status_code=404, detail="法规不存在")
     return LawResponse.model_validate(law)
+
+
+@router.get("/{law_id}/download")
+def download_attachment(law_id: int, db: Session = Depends(get_db)):
+    """下载法规附件"""
+    law = db.query(Law).filter(Law.id == law_id).first()
+    if not law:
+        raise HTTPException(status_code=404, detail="法规不存在")
+
+    if not law.file_path:
+        raise HTTPException(status_code=404, detail="该法规没有本地附件")
+
+    # 构建完整文件路径
+    file_path = Path(settings.attachment_dir) / law.file_path
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="附件文件不存在")
+
+    # 获取文件名
+    filename = law.file_path.split("/")[-1] if law.file_path else "attachment"
+    # 中文文件名编码
+    encoded_filename = quote(filename)
+
+    return FileResponse(
+        path=str(file_path),
+        filename=filename,
+        media_type="application/octet-stream",
+        headers={
+            "Content-Disposition": f"attachment; filename*=UTF-8''{encoded_filename}"
+        }
+    )
 
 
 # 爬取相关 API

@@ -16,6 +16,7 @@ class LawBase(BaseModel):
     file_url: Optional[str] = None
     file_path: Optional[str] = None
     file_content: Optional[str] = None
+    is_internal: int = 0
 
 
 class LawCreate(LawBase):
@@ -78,4 +79,4 @@ class CategoryResponse(BaseModel):
     """分类响应模型"""
 
     name: str
-    code: str
+    code: Optional[str] = None
